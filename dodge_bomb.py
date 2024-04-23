@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import time
 import pygame as pg
 
 
@@ -28,31 +29,68 @@ def check_bound(obj_rct):
     return yoko, tate
 
 
+def times():
+    new_lst = []
+    accs = [a for a in range(1, 11)]
+    
+    for r in range(1,11):
+        bb_imge = pg.Surface((20*r, 20*r))
+        bb_img.set_colorkey((0, 0, 0))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        new_lst.append(bb_img)
+    return accs
+
+
+def Gameover(screen):
+    """
+    こうかとんと爆弾が接触したときに
+    画面を暗転させてゲームオーバーであることを知らせる。
+    """
+    go_img = pg.Surface((WIDTH, HEIGHT))
+    pg.draw.rect(go_img,(0, 0, 0), (0, 0, WIDTH, HEIGHT), width=0)
+    go_rct = go_img.get_rect()
+    go_img.setalpha(200)
+    screen.blit(go_img, go_rct)
+    fonto = pg.font.Font(None, 100)
+    txt = fonto.render("Game Over", True, (255, 255, 255))
+    screen.blit(txt,[600, 400])
+    koka_img = pg.transform.rotozoom(pg.imaga.load("fig/8.png"), 0, 2, 0)
+    koka_rct = koka_img.get_rect()
+    koka_rct.center = 500, 450
+    screen.blit(koka_img, koka_rct)
+    koka_rct.center = 1100, 450
+    screen.blit(koka_img, koka_rct)
+    pg.display.update()
+    time.sleep(5)
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
-    bg_img = pg.image.load("fig/pg_bg.jpg")    
+    bg_img = pg.image.load("fig/pg_bb.jpg")    
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 2.0)
     kk_rct = kk_img.get_rect()
     kk_rct.center = 900, 400
-    bd_img = pg.Surface((20, 20))
-    bd_img.set_colorkey((0, 0, 0))
-    pg.draw.circle(bd_img, (255, 0, 0), (10, 10), 10)
-    bd_rct = bd_img.get_rect()
-    bd_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    accs, new_lst = time()
+    bb_img = new_lst[0]
+    bb_rct = bb_img.get_rect()
+    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
     vx, vy = +5, -5
 
 
     clock = pg.time.Clock()
     tmr = 0
+
+
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
                 return
-        if kk_rct.colliderect(bd_rct):
+        if kk_rct.colliderect(bb_rct):
             print("GameOver")
             return
         screen.blit(bg_img, [0, 0]) 
+
 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
@@ -64,9 +102,9 @@ def main():
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
-        bd_rct.move_ip(vx, vy)
-        screen.blit(bd_img, bd_rct)
-        yoko, tate = check_bound(bd_rct)
+        bb_rct.move_ip(vx, vy)
+        screen.blit(bb_img, bb_rct)
+        yoko, tate = check_bound(bb_rct)
         if not yoko: #横方向にはみ出たら
             vx *= -1
         if not tate: #縦方向にはみ出たら
